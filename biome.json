@@ -1,0 +1,88 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.3.11/schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
+	"files": {
+		"includes": [
+			"src/**",
+			"logger/**",
+			"package.json",
+			"tsconfig.*.json",
+			"tsconfig.json",
+			"vite.config.ts"
+		]
+	},
+	"formatter": {
+		"enabled": true,
+		"formatWithErrors": false,
+		"indentStyle": "tab",
+		"indentWidth": 2,
+		"lineEnding": "lf",
+		"lineWidth": 80,
+		"attributePosition": "auto",
+		"bracketSameLine": false,
+		"bracketSpacing": true,
+		"expand": "auto",
+		"useEditorconfig": true
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"a11y": {
+				"recommended": false
+			},
+			"correctness": {
+				"useExhaustiveDependencies": {
+					"level": "warn",
+					"options": {
+						"reportUnnecessaryDependencies": false
+					}
+				},
+				"noConstructorReturn": "off",
+				"useParseIntRadix": "off"
+			},
+			"suspicious": {
+				"noArrayIndexKey": "off",
+				"useIterableCallbackReturn": "info",
+				"noAssignInExpressions": "info"
+			},
+			"complexity": {
+				"noImportantStyles": "off"
+			},
+			"style": {
+				"noDescendingSpecificity": "info"
+			}
+		}
+	},
+	"javascript": {
+		"formatter": {
+			"jsxQuoteStyle": "double",
+			"quoteProperties": "asNeeded",
+			"trailingCommas": "all",
+			"semicolons": "always",
+			"arrowParentheses": "always",
+			"bracketSameLine": false,
+			"quoteStyle": "double",
+			"attributePosition": "auto",
+			"bracketSpacing": true
+		}
+	},
+	"html": {
+		"formatter": {
+			"indentScriptAndStyle": false,
+			"selfCloseVoidElements": "always"
+		}
+	},
+	"assist": {
+		"enabled": true,
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	}
+}

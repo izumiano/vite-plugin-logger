@@ -1,0 +1,7 @@
+repos:
+  - repo: local
+    hooks:
+      - id: biome-check
+        name: biome check
+        entry: npx biome check --write --files-ignore-unknown=true --no-errors-on-unmatched
+        language: system

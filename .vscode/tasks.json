@@ -1,0 +1,66 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Start Dev",
+			"dependsOn": ["npm: typecheck"],
+			"presentation": {
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			}
+		},
+		{
+			"type": "npm",
+			"script": "build",
+			"problemMatcher": [],
+			"label": "npm: build",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"type": "npm",
+			"script": "typecheck",
+			"problemMatcher": "$tsc-watch",
+			"isBackground": true,
+			"label": "npm: typecheck",
+			"detail": "typecheck project",
+			"group": {
+				"kind": "test",
+				"isDefault": false
+			}
+		},
+		{
+			"type": "npm",
+			"script": "preview",
+			"problemMatcher": [],
+			"label": "npm: preview",
+			"detail": "preview release build",
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			}
+		},
+		{
+			"type": "npm",
+			"script": "lint",
+			"label": "lint",
+			"group": {
+				"kind": "test",
+				"isDefault": false
+			}
+		},
+		{
+			"type": "npm",
+			"script": "lintFix",
+			"label": "lint fix",
+			"detail": "apply safe linting fixes",
+			"group": {
+				"kind": "test",
+				"isDefault": false
+			}
+		}
+	]
+}
