@@ -1,10 +1,27 @@
 import generate from "@babel/generator";
 import babelParser from "@babel/parser";
 import traverse, { type NodePath } from "@babel/traverse";
-import t, { type CallExpression } from "@babel/types";
+import t, { type CallExpression, type Identifier } from "@babel/types";
 import type { Plugin } from "vite";
 
 const pluginName = "LogPlugin";
+
+function getModuleFromIdentifier(
+	path: NodePath<CallExpression>,
+	identifier: NodePath<Identifier>,
+) {
+	const binding = path.scope.getBinding(identifier.node.name);
+	if (!binding || binding.kind !== "module") {
+		return;
+	}
+
+	const importDeclarationPath = binding.path.parentPath;
+	if (!importDeclarationPath?.isImportDeclaration()) {
+		return;
+	}
+
+	return importDeclarationPath;
+}
 
 function handleIdentifer(path: NodePath<CallExpression>) {
 	const classMethodPath = path.findParent(
@@ -21,7 +38,6 @@ function handleIdentifer(path: NodePath<CallExpression>) {
 
 	const methodName = classMethodPath.node.key.name;
 
-	// To get the parent class name, find the ClassDeclaration/ClassExpression ancestor
 	const classPath = classMethodPath.findParent(
 		(p) => p.isClassDeclaration() || p.isClassExpression(),
 	) as NodePath<t.ClassDeclaration> | NodePath<t.ClassExpression> | null;
@@ -30,17 +46,6 @@ function handleIdentifer(path: NodePath<CallExpression>) {
 	}
 	const className = classPath.node.id.name;
 
-	// const properties = [
-	// 	t.objectProperty(
-	// 		t.identifier("caller"),
-	// 		t.objectExpression([
-	// 			t.objectProperty(t.identifier("class"), t.stringLiteral(className)),
-	// 			t.objectProperty(t.identifier("method"), t.stringLiteral(methodName)),
-	// 		]),
-	// 	),
-	// ];
-	// const newArgument = t.objectExpression(properties);
-
 	const arg = t.stringLiteral(`%c[${className}] %c[${methodName}]`);
 
 	path.node.arguments.splice(0, 0, arg);
@@ -48,13 +53,11 @@ function handleIdentifer(path: NodePath<CallExpression>) {
 
 function handleDevLog(
 	path: NodePath<CallExpression>,
+	callee: NodePath<Identifier>,
 	id: string,
 	mode: string,
 ) {
-	if (
-		!mode.includes("production") ||
-		!path.get("callee").isIdentifier({ name: "log" })
-	) {
+	if (!mode.includes("production") || callee.node.name !== "log") {
 		return;
 	}
 
@@ -74,25 +77,28 @@ function handleDevLog(
 	);
 }
 
-function handleLog(path: NodePath<CallExpression>) {
-	const callee = path.get("callee");
-	if (
-		!callee.isIdentifier({ name: "logVerbose" }) &&
-		!callee.isIdentifier({ name: "logError" }) &&
-		!callee.isIdentifier({ name: "logWarn" })
-	) {
+function handleLog(
+	path: NodePath<CallExpression>,
+	callee: NodePath<Identifier>,
+) {
+	const name = callee.node.name;
+	if (name !== "logVerbose" && name !== "logError" && name !== "logWarn") {
 		return;
 	}
 
 	handleIdentifer(path);
 }
 
-function handleTrace(path: NodePath<CallExpression>, traceEnabled: boolean) {
-	const callee = path.get("callee");
+function handleTrace(
+	path: NodePath<CallExpression>,
+	callee: NodePath<Identifier>,
+	traceEnabled: boolean,
+) {
+	const name = callee.node.name;
 	if (
-		!callee.isIdentifier({ name: "trace" }) &&
-		!callee.isIdentifier({ name: "traceWarn" }) &&
-		!callee.isIdentifier({ name: "traceWithStacktrace" })
+		name !== "trace" &&
+		name !== "traceWarn" &&
+		name !== "traceWithStacktrace"
 	) {
 		return;
 	}
@@ -126,10 +132,23 @@ function transformSrc(
 	});
 	traverse(ast, {
 		CallExpression(path) {
-			handleDevLog(path, id, mode);
-			handleLog(path);
+			const callee = path.get("callee");
+			if (!callee.isIdentifier()) {
+				return;
+			}
 
-			handleTrace(path, traceEnabled);
+			const module = getModuleFromIdentifier(path, callee);
+			if (
+				!module ||
+				!module.node.source.value.includes("@izumiano/vite-logger")
+			) {
+				return;
+			}
+
+			handleDevLog(path, callee, id, mode);
+			handleLog(path, callee);
+
+			handleTrace(path, callee, traceEnabled);
 		},
 	});
 
