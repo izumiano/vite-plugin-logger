@@ -5,7 +5,7 @@ import dts from "vite-plugin-dts";
 
 // https://vite.dev/config/
 export default defineConfig({
-	plugins: [biomePlugin(), dts()],
+	plugins: [biomePlugin(), dts({ exclude: ["**/*.test.ts"] })],
 	base: "/",
 	build: {
 		lib: {
