@@ -1,12 +1,21 @@
 {
-	"name": "vite-plugin-logger",
-	"private": true,
-	"version": "0.0.0",
+	"name": "@izumiano/vite-plugin-logger",
+	"version": "0.0.1",
+	"author": "izumiano",
+	"license": "ISC",
 	"type": "module",
+	"repository": "https://github.com/izumiano/vite-plugin-logger",
+	"publishConfig": {
+		"@izumiano:registry": "https://npm.pkg.github.com"
+	},
+	"main": "./dist/index.js",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
 	"exports": {
 		".": {
 			"types": "./index.d.ts",
-			"import": "./index.js"
+			"import": "./index.js",
+			"require": "./index.umd.cjs"
 		}
 	},
 	"scripts": {
