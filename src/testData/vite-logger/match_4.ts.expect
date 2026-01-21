@@ -1,0 +1,78 @@
+const logUrl: string | null = null;
+const logs: { timestamp: number; message: string }[] = [];
+
+function handleArgs(...obj: unknown[]) {
+	const first = obj[0];
+	const second = obj[1];
+
+	obj[0] = `%c${first} ${second}`;
+	obj[1] = "color: gray;";
+
+	obj.splice(2, 0, ...["color: gray;", "color: #bbbbbb;"]);
+
+	return obj;
+}
+
+export function log(...obj: unknown[]) {
+	console.log(...obj);
+	handleExternalLogs(...obj);
+}
+
+export function logVerbose(...obj: unknown[]) {
+	console.error(...handleArgs("[VERBOSE]", ...obj));
+
+	handleExternalLogs("[VERBOSE]", ...obj);
+}
+
+export function logError(...obj: unknown[]) {
+	console.error(...handleArgs("[ERROR]", ...obj));
+
+	handleExternalLogs("[ERROR]", ...obj);
+}
+
+export function logWarn(...obj: unknown[]) {
+	console.warn(...handleArgs("[WARN]", ...obj));
+
+	handleExternalLogs("[WARN]", ...obj);
+}
+
+export function trace(...obj: unknown[]) {
+	console.debug(...handleArgs("[TRACE]", ...obj));
+
+	handleExternalLogs("[TRACE]", ...obj);
+}
+
+export function traceWarn(...obj: unknown[]) {
+	console.warn(...handleArgs("[TRACE]", ...obj));
+
+	handleExternalLogs("[TRACE]", "[WARN]", ...obj);
+}
+
+export function traceWithStacktrace(...obj: unknown[]) {
+	const stackTrace = new Error().stack;
+	console.debug(...handleArgs("[TRACE]", ...obj, stackTrace));
+
+	handleExternalLogs("[TRACE]", ...obj, stackTrace);
+}
+
+export function sendLogs() {
+	if (!logUrl) {
+		logError("Can't send logs as log url has not been set");
+		return;
+	}
+	const request = new Request(logUrl, {
+		body: JSON.stringify(logs),
+		method: "POST",
+	});
+	logs.length = 0;
+	console.log("sending", request);
+	fetch(request);
+}
+
+function handleExternalLogs(...obj: unknown[]) {
+	const body = {
+		timestamp: performance.now(),
+		message: JSON.stringify(obj),
+	};
+	logs.push(body);
+}

@@ -1,0 +1,10 @@
+import {trace, logError} from "@izumiano/vite-logger"
+
+logError("ERROR");
+
+class ClassName{
+	public functionName(){
+		trace("Message");
+		logError("Error Message");
+	}
+}
