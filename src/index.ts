@@ -1,5 +1,5 @@
 import type { Plugin } from "vite";
-import { pluginName, transformSrc } from "./transform";
+import { pluginName, transformSrc } from "./transform.js";
 
 export default function logPlugin(props?: {
 	mode?: string;

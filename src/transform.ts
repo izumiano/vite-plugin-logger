@@ -1,7 +1,13 @@
-import generate from "@babel/generator";
+import _generate from "@babel/generator";
 import babelParser from "@babel/parser";
-import traverse, { type NodePath } from "@babel/traverse";
+import type { NodePath } from "@babel/traverse";
+import _traverse from "@babel/traverse";
 import t, { type CallExpression, type Identifier } from "@babel/types";
+
+// @ts-expect-error
+const traverse: typeof _traverse = _traverse.default || _traverse;
+// @ts-expect-error
+const generate: typeof _generate = _generate.default || _generate;
 
 export const pluginName = "LogPlugin";
 
