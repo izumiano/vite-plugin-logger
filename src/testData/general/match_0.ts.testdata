@@ -2,6 +2,10 @@ import {trace, logError} from "@izumiano/vite-logger"
 
 logError("ERROR");
 
+function functionName(){
+	logError("func error");
+}
+
 class ClassName{
 	public functionName(){
 		trace("Message");

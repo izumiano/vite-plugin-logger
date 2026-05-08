@@ -16,7 +16,7 @@ function getModuleFromIdentifier(
 	identifier: NodePath<Identifier>,
 ) {
 	const binding = path.scope.getBinding(identifier.node.name);
-	if (!binding || binding.kind !== "module") {
+	if (!binding || (binding.kind !== "module" && binding.kind !== "hoisted")) {
 		return;
 	}
 
@@ -28,15 +28,10 @@ function getModuleFromIdentifier(
 	return importDeclarationPath;
 }
 
-function handleIdentifer(path: NodePath<CallExpression>) {
-	const classMethodPath = path.findParent(
-		(p) => p.isClassMethod() || p.isClassProperty(),
-	) as NodePath<t.ClassMethod> | NodePath<t.ClassProperty> | null;
-
-	if (!classMethodPath) {
-		return;
-	}
-
+function handleIdentiferClass(
+	path: NodePath<CallExpression>,
+	classMethodPath: NodePath<t.ClassMethod> | NodePath<t.ClassProperty>,
+) {
 	if (classMethodPath.node.key.type !== "Identifier") {
 		return;
 	}
@@ -51,9 +46,37 @@ function handleIdentifer(path: NodePath<CallExpression>) {
 	}
 	const className = classPath.node.id.name;
 
-	const arg = t.stringLiteral(`%c[${className}] %c[${methodName}]`);
+	const args = [t.stringLiteral(className), t.stringLiteral(methodName)];
 
-	path.node.arguments.splice(0, 0, arg);
+	path.node.arguments.splice(0, 0, ...args);
+}
+
+function handleIdentifer(path: NodePath<CallExpression>) {
+	const classMethodPath = path.findParent(
+		(p) => p.isClassMethod() || p.isClassProperty(),
+	) as NodePath<t.ClassMethod> | NodePath<t.ClassProperty> | null;
+
+	if (classMethodPath) {
+		handleIdentiferClass(path, classMethodPath);
+		return;
+	}
+
+	const functionParent = path.getFunctionParent();
+
+	let functionName = null;
+	if (
+		functionParent &&
+		t.isFunctionDeclaration(functionParent.node) &&
+		functionParent.node.id
+	) {
+		functionName = functionParent.node.id.name;
+	}
+
+	const args = [
+		t.nullLiteral(),
+		functionName ? t.stringLiteral(functionName) : t.nullLiteral(),
+	];
+	path.node.arguments.splice(0, 0, ...args);
 }
 
 function handleDevLog(
